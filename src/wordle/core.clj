@@ -71,6 +71,9 @@
          (apply min-key #(abs (- target-split (:weight %))))
          (:word))))
 
+(defn parse-path [path]
+  (re-seq #"[+-]\w\d?" path))
+
 (defonce freqs (read-freqs (str (System/getProperty "user.dir") "/datasets/unigram-freq.csv") ))
 (defonce all-words (read-words (str (System/getProperty "user.dir") "/datasets/scrabble-twl.txt")))
 (defonce words (reduce conj #{} (filter #(= 5 (count %)) all-words)))
