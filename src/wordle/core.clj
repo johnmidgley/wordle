@@ -41,8 +41,8 @@
 (def match-char (memoize match-char*))
 
 
-(defn match-any-letter [words word]
-  (->> (seq word)
+(defn match-any-letter [words letters]
+  (->> (seq letters)
        (map #(match-char words %))
        (reduce set/union)))
 
