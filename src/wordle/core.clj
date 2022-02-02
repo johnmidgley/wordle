@@ -24,6 +24,10 @@
          (mapcat  parse-line) 
          (apply hash-map))))
 
+
+(defn mode[freqs words]
+  (apply max-key #(get freqs % 1) words))
+
 (defn match-pred [words pred]
   (->> words
        (filter #(pred %))
@@ -39,7 +43,6 @@
      (match-pred words pred))))
 
 (def match-char (memoize match-char*))
-
 
 (defn match-any-letter [words letters]
   (->> (seq letters)
@@ -64,16 +67,12 @@
          (:word))))
 
 
-(defn op-fn [op]
-  (case op 
-    \+ set/intersection
-    \- set/difference))
-
-
 (defn apply-segment [words [op char pos]]
-  (let [f (op-fn op)
+  (let [op-fn (case op 
+                \+ set/intersection
+                \- set/difference)
         matches (match-char words char pos)]    
-    (f words matches)))
+    (op-fn words matches)))
 
 
 (defn parse-path [path]
@@ -85,6 +84,15 @@
   (let [segments (parse-path path)]
     (reduce apply-segment words segments)))
 
+(defn check-guess [target word]
+  (let [letters (apply hash-set target)]
+   (->> (map vector target word)
+        (map-indexed vector)
+        (map (fn [[pos [tl wl]]]
+               (str (if (letters wl) \+ \-)
+                    wl
+                    (if (= tl wl) pos))))
+        (apply str))))
 
 
 (defonce freqs (read-freqs (str (System/getProperty "user.dir") "/datasets/unigram-freq.csv")))
