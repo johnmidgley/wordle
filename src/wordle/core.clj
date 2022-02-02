@@ -101,11 +101,13 @@
   ([words guess-fn target]
    (reverse (play words guess-fn target "")))
   ([words guess-fn target path]
-   (if (= 1 (count words)) []
-       (let [guess (guess-fn words path)
-             new-path (str path (check-guess target guess))
-             new-words (apply-path words new-path)]
-          (conj (play new-words guess-fn target new-path) guess)))))
+   (case (count words)
+     0 [nil]
+     1 []
+     (let [guess (guess-fn words path)
+           new-path (str path (check-guess target guess))
+           new-words (apply-path words new-path)]
+       (conj (play new-words guess-fn target new-path) guess)))))
 
 (defonce freqs (read-freqs (str (System/getProperty "user.dir") "/datasets/unigram-freq.csv")))
 (defonce all-words (read-words (str (System/getProperty "user.dir") "/datasets/scrabble-twl.txt")))
