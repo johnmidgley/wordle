@@ -94,9 +94,7 @@
    (->> (map vector target word)
         (map-indexed vector)
         (map (fn [[pos [tl wl]]]
-               (str (if (letters wl) \+ \-)
-                    wl
-                    (if (= tl wl) pos (str "-" wl pos)))))
+               (str (if (letters wl) \+ \-) wl (if (= tl wl) pos (str "-" wl pos)))))
         (apply str))))
 
 (defn guess-by-mode [freqs words path]
