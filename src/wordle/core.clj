@@ -26,7 +26,9 @@
 
 
 (defn mode[freqs words]
-  (apply max-key #(get freqs % 1) words))
+  (if (empty? words)
+    nil
+    (apply max-key #(get freqs % 1) words)))
 
 (defn match-pred [words pred]
   (->> words
@@ -84,6 +86,9 @@
   (let [segments (parse-path path)]
     (reduce apply-segment words segments)))
 
+; Still not perfect - could be more constraining by taking into account previously matched letters
+; e.g. state as a guess - the second t could produce -t2-t3-t4, since there's only one t, but 
+; currenlty it just produces +t-t3
 (defn check-guess [target word]
   (let [letters (apply hash-set target)]
    (->> (map vector target word)
@@ -91,32 +96,28 @@
         (map (fn [[pos [tl wl]]]
                (str (if (letters wl) \+ \-)
                     wl
-                    (if (= tl wl) pos))))
+                    (if (= tl wl) pos (str "-" wl pos)))))
         (apply str))))
 
-(defn guess-by-mode [words path]
+(defn guess-by-mode [freqs words path]
   (mode freqs words))
 
 (defn play
   ([words guess-fn target]
-   (reverse (play words guess-fn target "")))
-  ([words guess-fn target path]
-   (case (count words)
-     0 [nil]
-     1 []
-     (let [guess (guess-fn words path)
-           new-path (str path (check-guess target guess))
-           new-words (apply-path words new-path)]
-       (conj (play new-words guess-fn target new-path) guess)))))
+   (reverse (distinct (play words guess-fn target "" 0))))
+  ([words guess-fn target path depth]
+   (cond
+     (> depth 10) [nil]
+     (<= (count words) 1) [(words target)]
+     :default (let [guess (guess-fn words path)
+                    new-path (str path (check-guess target guess))
+                    new-words (apply-path words new-path)]
+                (conj (play new-words guess-fn target new-path (inc depth)) guess)))))
 
 (defonce freqs (read-freqs (str (System/getProperty "user.dir") "/datasets/unigram-freq.csv")))
 (defonce all-words (read-words (str (System/getProperty "user.dir") "/datasets/scrabble-twl.txt")))
 (defonce words (reduce conj #{} (filter #(= 5 (count %)) all-words)))
 
-
-
-
-
-
-
+(defn play-by-mode [target]
+  (play words (partial guess-by-mode freqs) target))
        
