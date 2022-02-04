@@ -100,14 +100,15 @@
 
 
 (defn check-guess1 [target guess]
-  (let [{same true diff false} (->> (map vector target guess)
-                                    (map-indexed vector)
-                                    (group-by #(apply = (second %))))
-        free-target-ls (map (fn [[_ [l _]]] l) diff)
-        free-guess-lps (map (fn [[pos [_ l]]] [pos l]) diff)]
-    (concat (map (fn [[pos [l _]]] (str "+" l pos)) same)
-            free-target-ls 
-            free-guess-lps)))
+  (let [{same true diff false} (->> (map vector (range) target guess)
+                                    (group-by (fn [[p t g]] (= t g))))
+        pl (fn [c] (map (fn [[p _ l]] [p l]) c))
+        state {:same (pl same)
+               :diff (pl diff)
+               :free (map second diff)}]
+    state
+    ))
+
 
 
 (defn guess-by-mode [freqs words path]
