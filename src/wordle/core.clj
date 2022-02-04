@@ -89,13 +89,26 @@
 ; Still not perfect - could be more constraining by taking into account previously matched letters
 ; e.g. state as a guess - the second t could produce -t2-t3-t4, since there's only one t, but 
 ; currenlty it just produces +t-t3
-(defn check-guess [target word]
+(defn check-guess [target guess]
   (let [letters (apply hash-set target)]
-   (->> (map vector target word)
+   (->> (map vector target guess)
         (map-indexed vector)
         (map (fn [[pos [tl wl]]]
-               (str (if (letters wl) \+ \-) wl (if (= tl wl) pos (str "-" wl pos)))))
+               (let [match-at-letter (letters wl)]
+                (str (if  \+ \-) wl (if (= tl wl) pos (str "-" wl pos))))))
         (apply str))))
+
+
+(defn check-guess1 [target guess]
+  (let [{same true diff false} (->> (map vector target guess)
+                                    (map-indexed vector)
+                                    (group-by #(apply = (second %))))
+        free-target-ls (map (fn [[_ [l _]]] l) diff)
+        free-guess-lps (map (fn [[pos [_ l]]] [pos l]) diff)]
+    (concat (map (fn [[pos [l _]]] (str "+" l pos)) same)
+            free-target-ls 
+            free-guess-lps)))
+
 
 (defn guess-by-mode [freqs words path]
   (mode freqs words))
