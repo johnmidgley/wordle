@@ -1,6 +1,6 @@
 # wordle
 
-A Clojure library designed to solve worlde problems
+A Clojure library designed to solve wordle problems
 
 ## Usage
 
